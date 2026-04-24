@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <algorithm>
 
 #include "util.h"
 
@@ -21,14 +22,23 @@ using Util::small_eps;
 
 EOS_base::~EOS_base() {
     for (int itable = 0; itable < number_of_tables; itable++) {
-        Util::mtx_free(
-            pressure_tb[itable], nb_length[itable], e_length[itable]);
-        Util::mtx_free(
-            temperature_tb[itable], nb_length[itable], e_length[itable]);
+        Util::mtx_free(pressure_tb[itable],
+                       nb_length[itable], e_length[itable]);
+        Util::mtx_free(temperature_tb[itable],
+                       nb_length[itable], e_length[itable]);
+        Util::mtx_free(cs2_tb[itable],
+                       nb_length[itable], e_length[itable]);
+        Util::mtx_free(entropy_tb[itable],
+                       nb_length[itable], e_length[itable]);
+        Util::mtx_free(energy_tb[itable],
+                       nb_length[itable], e_length[itable]);
     }
     if (number_of_tables > 0) {
         delete[] pressure_tb;
         delete[] temperature_tb;
+        delete[] cs2_tb;
+        delete[] entropy_tb;
+        delete[] energy_tb;
     }
 }
 
@@ -63,6 +73,70 @@ double EOS_base::interpolate1D(double e, int table_idx, double ***table) const {
         result = temp1 * (1. - frac_e) + temp2 * frac_e;
     }
     return (result);
+}
+
+double EOS_base::interpolate1D_nonuniform(double e, int table_idx, double ***table_x, double ***table_y, double asymptotic_value) const
+{
+    const int N_e = e_length[table_idx];
+    const double *xe = table_x[table_idx][0];
+    const double *ye = table_y[table_idx][0];
+
+    if (e < xe[0]) {
+        std::cerr << "Energy point out of table limits (below)"<< std::endl; 
+        exit(1);
+    }
+
+    // --- Extrapolation above table
+    if (e >= xe[N_e - 1]) {
+        //std::cerr << "Energy point out of table limits (abv)"<< std::endl; 
+        //std::cerr << "Using X as " << asymptotic_value << std::endl; 
+
+        const double x0 = xe[N_e - 1];
+        const double y0 = ye[N_e - 1];
+
+        const double x1 = xe[N_e - 2];
+        const double y1 = ye[N_e - 2];
+
+        const double slope = (y0 - y1) / (x0 - x1);
+
+        double X_inf = asymptotic_value;  
+
+        const double delta = X_inf - y0;
+
+        // If slope already ~0 or delta ~0, just return asymptote
+        if (std::abs(delta) < 1e-12 || std::abs(slope) < 1e-12) {
+            return X_inf;
+        }
+        
+        if (delta * slope <= 0) {
+        // slope not pointing toward asymptote
+            //std::cerr << "Using X as " << X_inf << std::endl;
+            return X_inf;
+        }
+
+        const double k = slope / delta;
+
+        const double result =
+            X_inf - delta * std::exp(-k * (e - x0));
+
+        return result;
+    }
+
+    auto it = std::upper_bound(xe, xe + N_e, e);  // finds first xe[k] > e
+    int i = std::max(0, static_cast<int>(it - xe) - 1); // gives the index k such that xe[k] > e, subtracting one:  xe[i] <= e 
+
+    // --- linear interpolation
+    const double dx = xe[i + 1] - xe[i];
+    const double frac = (e - xe[i]) / dx;
+    const double result = ye[i] * (1.0 - frac) + ye[i + 1] * frac;
+
+    if (!std::isfinite(result)) {
+        std::cerr << "interpolate1D_nonuniform produced NaN/Inf at e=" << e
+                  << " between xe[" << i << "]=" << xe[i]
+                  << " and xe[" << i + 1 << "]=" << xe[i + 1] << std::endl;
+    }
+
+    return result;
 }
 
 void EOS_base::interpolate1D_with_gradients(

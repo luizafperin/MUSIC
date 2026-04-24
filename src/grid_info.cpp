@@ -186,6 +186,12 @@ void Cell_info::OutputEvolutionDataXYEta(Fields &arena, double tau) {
                 double Wyy = 0.0;
                 double Wyeta = 0.0;
                 double Wetaeta = 0.0;
+                
+                double x_coord = ((static_cast<double>(ix))*(DATA.delta_x)
+                            - (DATA.x_size)/2.0);
+                double y_coord = ((static_cast<double>(iy))*(DATA.delta_y)
+                            - (DATA.y_size)/2.0);
+                
                 if (DATA.turn_on_shear == 1) {
                     Wtautau = arena.Wmunu_[0][fieldIdx] / enthropy;
                     Wtaux = arena.Wmunu_[1][fieldIdx] / enthropy;
@@ -227,10 +233,13 @@ void Cell_info::OutputEvolutionDataXYEta(Fields &arena, double tau) {
 
                 // exclude the actual coordinates from the output to save space:
                 if (DATA.outputBinaryEvolution == 0) {
-                    fprintf(
-                        out_file_xyeta, "%e %e %e %e %e\n",
-                        thermalVec[6] * hbarc, thermalVec[7] * hbarc, vx, vy,
-                        vz);
+                    double e_local = arena.e_[fieldIdx];
+                    double rhob_local = arena.rhob_[fieldIdx];
+                    double T_local   = eos.get_temperature(e_local, rhob_local);
+                    double cs2_local = eos.get_cs2(e_local, rhob_local);
+                    double muB_local = eos.get_muB(e_local, rhob_local);
+                    fprintf(out_file_xyeta, "%e %e %e %e %e %e\n",
+                            e_local*hbarc, x_coord, y_coord, tau, T_local*hbarc, muB_local*hbarc);
                     if (DATA.viscosity_flag == 1) {
                         if (DATA.turn_on_shear) {
                             fprintf(

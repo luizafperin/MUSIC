@@ -14,6 +14,7 @@
 #include "eos_idealgas.h"
 #include "eos_neos.h"
 #include "eos_s95p.h"
+#include "eos_gp.h"
 
 EOS::EOS(const int eos_id_in) : eos_id(eos_id_in) {
     if (eos_id == 0) {
@@ -32,10 +33,12 @@ EOS::EOS(const int eos_id_in) : eos_id(eos_id_in) {
         eos_ptr = std::unique_ptr<EOS_BEST>(new EOS_BEST());
     } else if (eos_id == 19) {
         eos_ptr = std::unique_ptr<EOS_UH>(new EOS_UH());
+    } else if (eos_id == 24) {
+    eos_ptr = std::unique_ptr<EOS_gp> (new EOS_gp (eos_id));
     } else if (eos_id == 42) {
         eos_ptr = std::unique_ptr<EOS_1DGenerator>(new EOS_1DGenerator(eos_id));
     } else {
-        std::cout << "No EOS for eos_id = " << std::endl;
+        std::cout << "No EOS for eos_id = " << eos_id << std::endl;
         exit(1);
     }
     eos_ptr->initialize_eos();

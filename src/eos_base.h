@@ -30,6 +30,9 @@ class EOS_base {
 
     double ***pressure_tb;
     double ***temperature_tb;
+    double ***cs2_tb;
+    double ***entropy_tb;
+    double ***energy_tb;
     double ***mu_B_tb;
     double ***mu_S_tb;
     double ***mu_Q_tb;
@@ -62,6 +65,7 @@ class EOS_base {
     void interpolate1D_with_gradients(
         double e, int table_idx, double ***table, double &p,
         double &dpde) const;
+    double interpolate1D_nonuniform(double e, const int table_idx, double ***table_x, double ***table_y, double asymptotic_value) const;
     double interpolate2D(
         const double e, const double rhob, const int table_idx,
         double ***table) const;

@@ -43,11 +43,29 @@ void EOS_gp::initialize_eos() {
     energy_tb = new double** [ntables];
 
     for (int itable = 0; itable < ntables; itable++) {
-    	//music_message << "reading table " << itable;
-    	//music_message.flush("info");
-    	
-        std::ifstream eos_file(envPath + "/EOS/EOS-gp/constrained/l400_s15/eos_w_s0_l400_s15.dat");
-        music_message << "file from path " << envPath.c_str() << "/EOS/EOS-gp/constrained/l400_s15/eos_w_s0_l400_s15.dat \n";
+
+        int l = 400;
+        int sigma = 15;
+        std::string eos_type = "hrg";
+        std::string sample = "s0";
+
+    	std::string base = envPath + "/EOS/EOS-gp/constrained";
+
+        std::ostringstream path;
+        path << base << "/l" << l << "_s" << sigma << "/eos_" << eos_type << "_" 
+        << sample << "_l" << l << "_s" << sigma << ".dat";
+
+        std::string EOS_FILE = path.str();
+
+        std::ifstream eos_file(EOS_FILE);
+
+        if (!eos_file.is_open()) {
+        music_message << "ERROR: Could not open EOS file: " << EOS_FILE << "\n";
+        exit(1);
+        }
+
+        music_message << "file from path " << EOS_FILE << "\n";
+
 
         //fixed baryon number/density -> not a grid in energy and density  
         nb_length[itable] = 1;
@@ -95,10 +113,6 @@ void EOS_gp::initialize_eos() {
         	break;
             }
 
-/*             if(ii<=1){ 
-                music_message << "temp " << temperature << " energy " << energy;
-                music_message.flush("info");
-            } */
             
             temperature_tb[itable][0][ii] = temperature/ Util::hbarc;    // 1/fm
 
@@ -111,30 +125,6 @@ void EOS_gp::initialize_eos() {
             energy_tb[itable][0][ii] = energy/ Util::hbarc; // 1/fm^4
             
         }
-
-         // Initialize splines for all properties
-        /* const int N_e = e_length[itable];
-        const double *xe = energy_tb[itable][0];
-        
-        // Temperature spline
-        temperature_spline_cache.push_back(gsl_spline_alloc(gsl_interp_linear, N_e));
-        temperature_accel_cache.push_back(gsl_interp_accel_alloc());
-        gsl_spline_init(temperature_spline_cache[itable], xe, temperature_tb[itable][0], N_e);
-        
-        // Pressure spline
-        pressure_spline_cache.push_back(gsl_spline_alloc(gsl_interp_linear, N_e));
-        pressure_accel_cache.push_back(gsl_interp_accel_alloc());
-        gsl_spline_init(pressure_spline_cache[itable], xe, pressure_tb[itable][0], N_e);
-        
-        // cs2 spline
-        cs2_spline_cache.push_back(gsl_spline_alloc(gsl_interp_linear, N_e));
-        cs2_accel_cache.push_back(gsl_interp_accel_alloc());
-        gsl_spline_init(cs2_spline_cache[itable], xe, cs2_tb[itable][0], N_e);
-        
-        // Entropy spline
-        entropy_spline_cache.push_back(gsl_spline_alloc(gsl_interp_linear, N_e));
-        entropy_accel_cache.push_back(gsl_interp_accel_alloc());
-        gsl_spline_init(entropy_spline_cache[itable], xe, entropy_tb[itable][0], N_e); */ 
         
     }
 
@@ -174,27 +164,19 @@ double EOS_gp::get_temperature(double e, double rhob) const {
 //! This function returns the local pressure in [1/fm^4]
 //! the input local energy density [1/fm^4], rhob [1/fm^3]
 double EOS_gp::get_pressure(double e, double rhob) const {
-    //double f = interpolate_spline(e, 0, pressure_spline_cache,
-    //                             pressure_accel_cache, pressure_tb);
     double f = interpolate1D_nonuniform(e, 0, energy_tb, pressure_tb, 200/Util::hbarc);
     return(std::max(Util::small_eps, f));
 }
 
 double EOS_gp::get_cs2(double e, double rhob) const {
-    //double f = interpolate_spline(e, 0, cs2_spline_cache,
-     //                             cs2_accel_cache, cs2_tb);
     double f = interpolate1D_nonuniform(e, 0, energy_tb, cs2_tb, 0.333);
     return(std::max(Util::small_eps, f));
 }
 
 double EOS_gp::get_entropy(double e, double rhob) const {
-    //double f = interpolate_spline(e, 0, entropy_spline_cache,
-    //                              entropy_accel_cache, entropy_tb);
     double f = interpolate1D_nonuniform(e, 0, energy_tb, entropy_tb, 1000.);
     return(std::max(Util::small_eps, f));
 }
-
-//keep this ones?
 
 double EOS_gp::get_s2e(double s, double rhob) const {
     double e = get_s2e_finite_rhob(s, 0.0);

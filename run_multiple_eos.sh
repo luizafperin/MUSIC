@@ -4,16 +4,16 @@
 # === Configuration ===
 MUSIC_DIR="/home/luizaperin/MUSIC"
 
-EOS_MODE="constrained"  # or "constrained"
+EOS_MODE="unconstrained"  # or "unconstrained"
 EOS_BASE="$MUSIC_DIR/EOS/EOS-gp/$EOS_MODE"
 
-RESULTS_BASE="/home/luizaperin/masters_research/hydro_res_analysis_newMUSIC"
+RESULTS_BASE="/home/luizaperin/codes/hydro_res_analysis"
 
 # EOS parameters
 L="400"
 S="15"
 EOS_TYPES=("w" "hrg" "pwr")
-SAMPLES=("s")
+SAMPLES=("s1" "s2" "s3" "s4" "s5" "s6" "s7" "s8" "s9")
 
 # Path to the cpp file containing the EOS file definition
 EOS_CPP_FILE="$MUSIC_DIR/src/eos_gp.cpp"
@@ -43,11 +43,19 @@ for eos_type in "${EOS_TYPES[@]}"; do
 	# === Update EOS file path in the C++ source ===
 	echo "Updating EOS path in $EOS_CPP_FILE..."
 	sed -i -E \
-    	"s|std::ifstream eos_file\\(envPath .*|std::ifstream eos_file(envPath + \"/EOS/EOS-gp/$EOS_MODE/l${L}_s${S}/eos_${eos_type}_${sample}_l${L}_s${S}.dat\");|" \
+    	"s|^[[:space:]]*int l = .*|        int l = ${L};|" \
     	"$EOS_CPP_FILE"
-
 	sed -i -E \
-    	"s|music_message << \"file from path .*|music_message << \"file from path \" << envPath.c_str() << \"/EOS/EOS-gp/$EOS_MODE/l${L}_s${S}/eos_${eos_type}_${sample}_l${L}_s${S}.dat \\\\n\";|" \
+    	"s|^[[:space:]]*int sigma = .*|        int sigma = ${S};|" \
+    	"$EOS_CPP_FILE"
+	sed -i -E \
+    	"s|^[[:space:]]*std::string eos_type = .*|        std::string eos_type = \"${eos_type}\";|" \
+    	"$EOS_CPP_FILE"
+	sed -i -E \
+    	"s|^[[:space:]]*std::string sample = .*|        std::string sample = \"${sample}\";|" \
+    	"$EOS_CPP_FILE"
+	sed -i -E \
+    	"s|^[[:space:]]*std::string base = envPath .*|        std::string base = envPath + \"/EOS/EOS-gp/${EOS_MODE}\";|" \
     	"$EOS_CPP_FILE"
 
 
@@ -56,16 +64,16 @@ for eos_type in "${EOS_TYPES[@]}"; do
         cd "$MUSIC_DIR/build" || exit 1
         make -j || { echo "Compilation failed!"; exit 1; }
         
-        cd "/home/luizaperin/MUSIC_repo"
+        cd "/home/luizaperin/MUSIC"
         # === Run MUSIC ===
-        LOG_FILE="${RESULTS_BASE}/res_${eos_type}/l${L}_s${S}/${sample}_l${L}_s${S}/${sample}_l${L}_s${S}.log"
+        LOG_FILE="${RESULTS_BASE}/res_${eos_type}_unc/l${L}_s${S}/${sample}_l${L}_s${S}/${sample}_l${L}_s${S}.log"
         #LOG_FILE="${RESULTS_BASE}/res_tests/w_ValidSamples/${sample}_l${L}_s${S}.log"
 
         echo "Running MUSIC..."
         "$MUSIC_BIN" "$MUSIC_INPUT" > "$LOG_FILE" 2>&1
 
         # Prepare destination folder
-        DEST_DIR="${RESULTS_BASE}/res_${eos_type}/l${L}_s${S}/${sample}_l${L}_s${S}"
+        DEST_DIR="${RESULTS_BASE}/res_${eos_type}_unc/l${L}_s${S}/${sample}_l${L}_s${S}"
         mkdir -p "$DEST_DIR"
 
         # Move important output files

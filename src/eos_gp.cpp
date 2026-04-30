@@ -46,10 +46,10 @@ void EOS_gp::initialize_eos() {
 
         int l = 400;
         int sigma = 15;
-        std::string eos_type = "hrg";
-        std::string sample = "s0";
+        std::string eos_type = "w";
+        std::string sample = "s1";
 
-    	std::string base = envPath + "/EOS/EOS-gp/constrained";
+        std::string base = envPath + "/EOS/EOS-gp/unconstrained";
 
         std::ostringstream path;
         path << base << "/l" << l << "_s" << sigma << "/eos_" << eos_type << "_" 

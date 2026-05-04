@@ -81,7 +81,7 @@ for eos_type in "${EOS_TYPES[@]}"; do
            # mv surface_eps_0.18.dat "$DEST_DIR/"
         #fi
         if [[ -f evolution_xyeta.dat ]]; then
-            mv evolution_xyeta.dat "$DEST_DIR/"
+            cp evolution_xyeta.dat "$DEST_DIR/"
         fi
 
         echo "Run completed. Results stored in: $DEST_DIR"

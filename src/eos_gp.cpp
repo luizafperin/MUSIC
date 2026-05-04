@@ -46,10 +46,10 @@ void EOS_gp::initialize_eos() {
 
         int l = 400;
         int sigma = 15;
-        std::string eos_type = "w";
-        std::string sample = "s1";
+        std::string eos_type = "hrg";
+        std::string sample = "s0";
 
-        std::string base = envPath + "/EOS/EOS-gp/unconstrained";
+        std::string base = envPath + "/EOS/EOS-gp/constrained";
 
         std::ostringstream path;
         path << base << "/l" << l << "_s" << sigma << "/eos_" << eos_type << "_" 
@@ -61,10 +61,12 @@ void EOS_gp::initialize_eos() {
 
         if (!eos_file.is_open()) {
         music_message << "ERROR: Could not open EOS file: " << EOS_FILE << "\n";
+        music_message.flush("info");
         exit(1);
         }
 
         music_message << "file from path " << EOS_FILE << "\n";
+        music_message.flush("info");
 
 
         //fixed baryon number/density -> not a grid in energy and density  

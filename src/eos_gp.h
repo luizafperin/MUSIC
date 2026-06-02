@@ -8,9 +8,15 @@
 class EOS_gp : public EOS_base {
  private:
     const int eos_id;
+    int l;
+    int sigma;
+    std::string eos_type;
+    std::string sample;
 
  public:
     EOS_gp(const int eos_id_in);
+    EOS_gp(const int eos_id_in, int l_in, int sigma_in,
+           const std::string &eos_type_in, const std::string &sample_in);
 
     void initialize_eos();
     double p_e_func       (double e, double rhob) const;

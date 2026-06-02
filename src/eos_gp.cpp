@@ -12,7 +12,21 @@
 using std::stringstream;
 using std::string;
 
-EOS_gp::EOS_gp(const int eos_id_in) : eos_id(eos_id_in) {
+EOS_gp::EOS_gp(const int eos_id_in) : eos_id(eos_id_in), l(400), sigma(15),
+    eos_type("hrg"), sample("s0") {
+    set_EOS_id(eos_id);
+    set_number_of_tables(0);
+    set_eps_max(1e5);
+    set_flag_muB(false);
+    set_flag_muS(false);
+    set_flag_muQ(false);
+}
+
+EOS_gp::EOS_gp(const int eos_id_in, int l_in, int sigma_in,
+               const std::string &eos_type_in,
+               const std::string &sample_in)
+    : eos_id(eos_id_in), l(l_in), sigma(sigma_in),
+      eos_type(eos_type_in), sample(sample_in) {
     set_EOS_id(eos_id);
     set_number_of_tables(0);
     set_eps_max(1e5);
@@ -44,16 +58,11 @@ void EOS_gp::initialize_eos() {
 
     for (int itable = 0; itable < ntables; itable++) {
 
-        int l = 400;
-        int sigma = 15;
-        std::string eos_type = "hrg";
-        std::string sample = "s0";
-
         std::string base = envPath + "/EOS/EOS-gp/constrained";
 
         std::ostringstream path;
-        path << base << "/l" << l << "_s" << sigma << "/eos_" << eos_type << "_" 
-        << sample << "_l" << l << "_s" << sigma << ".dat";
+        path << base << "/l" << l << "_s" << sigma << "/eos_" << eos_type << "_"
+             << sample << "_l" << l << "_s" << sigma << ".dat";
 
         std::string EOS_FILE = path.str();
 

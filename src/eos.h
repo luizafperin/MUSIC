@@ -6,6 +6,7 @@
 #include <memory>
 #include <vector>
 
+#include "data.h"
 #include "eos_base.h"
 
 //! This is a wrapper class for the equation of state
@@ -18,6 +19,7 @@ class EOS {
   public:
     EOS() = delete;
     EOS(const int eos_id_in);
+    EOS(const int eos_id_in, const InitData &DATA_in);
 
     ~EOS() {};
 

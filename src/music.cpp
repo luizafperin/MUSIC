@@ -26,7 +26,7 @@ using std::vector;
 
 MUSIC::MUSIC(std::string input_file)
     : DATA(ReadInParameters::read_in_parameters(input_file)),
-      eos(DATA.whichEOS) {
+      eos(DATA.whichEOS, DATA) {
     DATA.reRunHydro = false;
     DATA.reRunCount = 0;
     mode = DATA.mode;

@@ -34,7 +34,37 @@ EOS::EOS(const int eos_id_in) : eos_id(eos_id_in) {
     } else if (eos_id == 19) {
         eos_ptr = std::unique_ptr<EOS_UH>(new EOS_UH());
     } else if (eos_id == 24) {
-    eos_ptr = std::unique_ptr<EOS_gp> (new EOS_gp (eos_id));
+        eos_ptr = std::unique_ptr<EOS_gp>(new EOS_gp(eos_id));
+    } else if (eos_id == 42) {
+        eos_ptr = std::unique_ptr<EOS_1DGenerator>(new EOS_1DGenerator(eos_id));
+    } else {
+        std::cout << "No EOS for eos_id = " << eos_id << std::endl;
+        exit(1);
+    }
+    eos_ptr->initialize_eos();
+}
+
+EOS::EOS(const int eos_id_in, const InitData &DATA_in) : eos_id(eos_id_in) {
+    if (eos_id == 0) {
+        eos_ptr = std::unique_ptr<EOS_idealgas>(new EOS_idealgas());
+    } else if (eos_id == 1) {
+        eos_ptr = std::unique_ptr<EOS_eosQ>(new EOS_eosQ());
+    } else if (eos_id >= 2 && eos_id <= 7) {
+        eos_ptr = std::unique_ptr<EOS_s95p>(new EOS_s95p(eos_id));
+    } else if (eos_id == 8) {
+        eos_ptr = std::unique_ptr<EOS_WB>(new EOS_WB());
+    } else if (eos_id == 9 || eos_id == 91) {
+        eos_ptr = std::unique_ptr<EOS_hotQCD>(new EOS_hotQCD(eos_id));
+    } else if (eos_id >= 10 && eos_id <= 15) {
+        eos_ptr = std::unique_ptr<EOS_neos>(new EOS_neos(eos_id));
+    } else if (eos_id == 17) {
+        eos_ptr = std::unique_ptr<EOS_BEST>(new EOS_BEST());
+    } else if (eos_id == 19) {
+        eos_ptr = std::unique_ptr<EOS_UH>(new EOS_UH());
+    } else if (eos_id == 24) {
+        eos_ptr = std::unique_ptr<EOS_gp>(new EOS_gp(
+            eos_id, DATA_in.EOS_gp_l, DATA_in.EOS_gp_sigma,
+            DATA_in.EOS_gp_type, DATA_in.EOS_gp_sample));
     } else if (eos_id == 42) {
         eos_ptr = std::unique_ptr<EOS_1DGenerator>(new EOS_1DGenerator(eos_id));
     } else {

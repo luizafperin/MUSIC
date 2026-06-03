@@ -104,10 +104,12 @@ typedef struct init_data {
     double preEqVisFactor;
 
     int whichEOS;  //!< type of EoS
-    int EOS_gp_l;
-    int EOS_gp_sigma;
-    std::string EOS_gp_type;
-    std::string EOS_gp_sample;
+    int EOS_gp_l; // correlation length
+    int EOS_gp_sigma; 
+    int T_sw; // in MeV
+    std::string EOS_gp_type; // hrg, pwr or w
+    std::string EOS_gp_sample; //s0, s1, s2 ...
+    std::string gp_type; // constrained or unconstrained
     //! flag for boost invariant simulations
     bool boost_invariant;
 

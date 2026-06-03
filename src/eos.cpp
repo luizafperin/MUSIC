@@ -16,7 +16,8 @@
 #include "eos_s95p.h"
 #include "eos_gp.h"
 
-EOS::EOS(const int eos_id_in) : eos_id(eos_id_in) {
+//old version
+/*EOS::EOS(const int eos_id_in) : eos_id(eos_id_in) {
     if (eos_id == 0) {
         eos_ptr = std::unique_ptr<EOS_idealgas>(new EOS_idealgas());
     } else if (eos_id == 1) {
@@ -42,7 +43,7 @@ EOS::EOS(const int eos_id_in) : eos_id(eos_id_in) {
         exit(1);
     }
     eos_ptr->initialize_eos();
-}
+} */ 
 
 EOS::EOS(const int eos_id_in, const InitData &DATA_in) : eos_id(eos_id_in) {
     if (eos_id == 0) {
@@ -63,8 +64,8 @@ EOS::EOS(const int eos_id_in, const InitData &DATA_in) : eos_id(eos_id_in) {
         eos_ptr = std::unique_ptr<EOS_UH>(new EOS_UH());
     } else if (eos_id == 24) {
         eos_ptr = std::unique_ptr<EOS_gp>(new EOS_gp(
-            eos_id, DATA_in.EOS_gp_l, DATA_in.EOS_gp_sigma,
-            DATA_in.EOS_gp_type, DATA_in.EOS_gp_sample));
+            eos_id, DATA_in.EOS_gp_l, DATA_in.EOS_gp_sigma, DATA_in.T_sw,
+            DATA_in.EOS_gp_type, DATA_in.EOS_gp_sample, DATA_in.gp_type));
     } else if (eos_id == 42) {
         eos_ptr = std::unique_ptr<EOS_1DGenerator>(new EOS_1DGenerator(eos_id));
     } else {

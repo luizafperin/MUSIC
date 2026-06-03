@@ -261,6 +261,8 @@ InitData read_in_parameters(std::string input_file) {
     if (parameter_list.whichEOS == 24) {
         parameter_list.EOS_gp_l =
             getParameter(input_file, "EOS_gp_l", 400);
+         parameter_list.T_sw =
+            getParameter(input_file, "T_sw", 150);
         parameter_list.EOS_gp_sigma =
             getParameter(input_file, "EOS_gp_sigma", 15);
 
@@ -272,7 +274,11 @@ InitData read_in_parameters(std::string input_file) {
         tmp = Util::StringFind4(input_file, "EOS_gp_sample");
         parameter_list.EOS_gp_sample =
             (tmp != "empty") ? tmp : "s0";
-
+            
+        tmp = Util::StringFind4(input_file, "gp_type");
+        parameter_list.gp_type =
+            (tmp != "empty") ? tmp : "constrained";
+            
         if (parameter_list.EOS_gp_l <= 0
             || parameter_list.EOS_gp_sigma <= 0) {
             music_message << "Invalid EOS_gp parameters: l="

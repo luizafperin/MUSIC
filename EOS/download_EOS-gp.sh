@@ -7,12 +7,13 @@ S=15
 MODE=("constrained") #or unconstrained
 EOS_TYPES=("hrg" "pwr" "w")
 SAMPLES=("s0" "s1" "s3")
-T=150 #switching temperature in MeV
+T=(136 150) #switching temperature in MeV
 
-BASE_URL="https://raw.githubusercontent.com/luizafperin/MUSIC-EOS-data/refs/heads/main/EOS-gp/Tsw_${T}/${MODE}/l${L}_s${S}"
+for temp in "${T[@]}"; do
+BASE_URL="https://raw.githubusercontent.com/luizafperin/MUSIC-EOS-data/refs/heads/main/EOS-gp/Tsw_${temp}/${MODE[0]}/l${L}_s${S}"
 
 # Use relative path (assumes script runs inside EOS_database)
-TARGET_DIR="EOS-gp/Tsw_${T}/${MODE}/l${L}_s${S}"
+TARGET_DIR="EOS-gp/Tsw_${temp}/${MODE[0]}/l${L}_s${S}"
 mkdir -p "${TARGET_DIR}"
 
 for eos in "${EOS_TYPES[@]}"; do
@@ -32,4 +33,5 @@ for eos in "${EOS_TYPES[@]}"; do
     curl -fL -o "${DEST}" "${URL}"
 
   done
+done
 done

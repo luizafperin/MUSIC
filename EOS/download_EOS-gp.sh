@@ -1,6 +1,6 @@
 MODE=("constrained" "unconstrained")
 EOS_TYPES=("hrg" "pwr" "w")
-SAMPLES=("s0" "s1" "s3")
+SAMPLES=("s0" "s1" "s3" "s4")
 T=(136 150)
 
 for mode in "${MODE[@]}"; do

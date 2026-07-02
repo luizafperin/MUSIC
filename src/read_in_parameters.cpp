@@ -277,7 +277,7 @@ InitData read_in_parameters(std::string input_file) {
             
         tmp = Util::StringFind4(input_file, "gp_type");
         parameter_list.gp_type =
-            (tmp != "empty") ? tmp : "constrained";
+            (tmp != "empty") ? tmp : "unconstrained";
             
         if (parameter_list.EOS_gp_l <= 0
             || parameter_list.EOS_gp_sigma <= 0) {

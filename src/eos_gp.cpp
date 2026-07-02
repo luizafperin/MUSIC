@@ -13,7 +13,7 @@ using std::stringstream;
 using std::string;
 
 EOS_gp::EOS_gp(const int eos_id_in) : eos_id(eos_id_in), l(400), sigma(15),
-    T_sw(150), eos_type("hrg"), sample("s0"), gp_type("constrained") {
+    T_sw(150), eos_type("hrg"), sample("s0"), gp_type("unconstrained") {
     set_EOS_id(eos_id);
     set_number_of_tables(0);
     set_eps_max(1e5);

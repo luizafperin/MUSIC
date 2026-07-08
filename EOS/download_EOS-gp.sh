@@ -28,7 +28,10 @@ for mode in "${MODE[@]}"; do
             fi
 
             echo "Downloading ${FILE}..."
-            curl -fL -o "${DEST}" "${URL}"
+            curl -fL -o "${DEST}" "${URL}" || {
+            	echo "Warning: ${FILE} not found, skipping."
+    		rm -f "${DEST}"
+            } 
           done
         done
 

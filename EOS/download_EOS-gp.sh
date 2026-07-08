@@ -1,6 +1,6 @@
-MODE=("constrained" "unconstrained")
+MODE=("constrained" "unconstrained" "training")
 EOS_TYPES=("hrg" "pwr" "w")
-SAMPLES=("s0" "s1" "s3" "s4")
+SAMPLES=("s0" "s1" "s2" "s3" "s4" "s5" "s6" "s7" "s8" "s9")
 T=(136 150)
 
 L_VALUES=(400)

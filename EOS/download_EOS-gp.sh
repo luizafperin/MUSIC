@@ -1,65 +1,24 @@
-MODE=("constrained" "unconstrained" "training")
-EOS_TYPES=("hrg" "pwr" "w")
+#!/bin/bash
 
-SAMPLES=($(seq 0 30 | sed 's/^/s/'))
+REPO_URL="https://github.com/luizafperin/MUSIC-EOS-data.git"
+TEMP_DIR="MUSIC-EOS-data"
+TARGET_DIR="EOS-gp"
 
-T=(136 150)
+# Remove old temporary clone if it exists
+rm -rf "$TEMP_DIR"
 
-L_VALUES=(400)
-SIGMA_VALUES=(15)
+# Clone repository
+echo "Cloning MUSIC-EOS-data..."
+git clone --depth 1 "$REPO_URL" "$TEMP_DIR"
 
-# Means to use for the unconstrained EOS
-MEANS=("0_1")
+# Remove existing EOS-gp directory if you want a fresh copy
+rm -rf "$TARGET_DIR"
 
-for mode in "${MODE[@]}"; do
-  for temp in "${T[@]}"; do
+# Copy EOS-gp from the repository
+cp -r "$TEMP_DIR/EOS-gp" "$TARGET_DIR"
 
-    # Choose means only for unconstrained
-    if [ "$mode" == "unconstrained" ]; then
-      MEAN_LIST=("${MEANS[@]}")
-    else
-      MEAN_LIST=("")
-    fi
+# Remove temporary repository
+rm -rf "$TEMP_DIR"
 
-    for mean in "${MEAN_LIST[@]}"; do
-      for L in "${L_VALUES[@]}"; do
-        for SIGMA in "${SIGMA_VALUES[@]}"; do
-
-          # Construct directory depending on mode
-          if [ "$mode" == "unconstrained" ]; then
-            BASE_URL="https://raw.githubusercontent.com/luizafperin/MUSIC-EOS-data/refs/heads/main/EOS-gp/Tsw_${temp}/${mode}/${mean}/l${L}_s${SIGMA}"
-            TARGET_DIR="EOS-gp/Tsw_${temp}/${mode}/${mean}/l${L}_s${SIGMA}"
-          else
-            BASE_URL="https://raw.githubusercontent.com/luizafperin/MUSIC-EOS-data/refs/heads/main/EOS-gp/Tsw_${temp}/${mode}/l${L}_s${SIGMA}"
-            TARGET_DIR="EOS-gp/Tsw_${temp}/${mode}/l${L}_s${SIGMA}"
-          fi
-
-          mkdir -p "${TARGET_DIR}"
-
-          for eos in "${EOS_TYPES[@]}"; do
-            for sample in "${SAMPLES[@]}"; do
-
-              FILE="eos_${eos}_${sample}_l${L}_s${SIGMA}.dat"
-              URL="${BASE_URL}/${FILE}"
-              DEST="${TARGET_DIR}/${FILE}"
-
-              if [ -f "${DEST}" ]; then
-                echo "Skipping ${FILE} (already exists)"
-                continue
-              fi
-
-              echo "Downloading ${FILE}..."
-              curl -fL -o "${DEST}" "${URL}" || {
-                echo "Warning: ${FILE} not found, skipping."
-                rm -f "${DEST}"
-              }
-
-            done
-          done
-
-        done
-      done
-    done
-
-  done
-done
+echo "Done!"
+echo "EOS data is now in: $TARGET_DIR"

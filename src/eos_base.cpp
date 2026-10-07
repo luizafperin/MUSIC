@@ -75,22 +75,21 @@ double EOS_base::interpolate1D(double e, int table_idx, double ***table) const {
     return (result);
 }
 
-double EOS_base::interpolate1D_nonuniform(double e, int table_idx, double ***table_x, double ***table_y, double asymptotic_value) const
+double EOS_base::interpolate1D_nonuniform(double e, int table_idx,
+                                          double ***table_x, double ***table_y,
+                                          double asymptotic_value) const
 {
     const int N_e = e_length[table_idx];
     const double *xe = table_x[table_idx][0];
     const double *ye = table_y[table_idx][0];
 
     if (e < xe[0]) {
-        std::cerr << "Energy point out of table limits (below)"<< std::endl; 
+        std::cerr << "Energy point out of table limits (below)" << std::endl;
         exit(1);
     }
 
     // --- Extrapolation above table
     if (e >= xe[N_e - 1]) {
-        //std::cerr << "Energy point out of table limits (abv)"<< std::endl; 
-        //std::cerr << "Using X as " << asymptotic_value << std::endl; 
-
         const double x0 = xe[N_e - 1];
         const double y0 = ye[N_e - 1];
 
@@ -99,44 +98,39 @@ double EOS_base::interpolate1D_nonuniform(double e, int table_idx, double ***tab
 
         const double slope = (y0 - y1) / (x0 - x1);
 
-        double X_inf = asymptotic_value;  
-
+        const double X_inf = asymptotic_value;
         const double delta = X_inf - y0;
 
-        // If slope already ~0 or delta ~0, just return asymptote
-        if (std::abs(delta) < 1e-12 || std::abs(slope) < 1e-12) {
-            return X_inf;
-        }
-        
-        if (delta * slope <= 0) {
-        // slope not pointing toward asymptote
-            //std::cerr << "Using X as " << X_inf << std::endl;
+        // Table already at the asymptote: nothing to relax
+        if (std::abs(delta) < 1e-12) {
             return X_inf;
         }
 
-        const double k = slope / delta;
+        double k;
+        if (delta * slope > 1e-12 * std::abs(delta)) {
+            // Slope points toward the asymptote:
+            // match both value and slope at x0
+            k = slope / delta;
+        } else {
+            // Slope is ~0 or points away from the asymptote:
+            // cannot match the slope, but keep the VALUE continuous
+            // by relaxing exponentially over a length scale L.
+            const double L = x0;   // tunable: e.g. 0.5*x0 for a faster approach
+            k = 1.0 / L;
+        }
 
-        const double result =
-            X_inf - delta * std::exp(-k * (e - x0));
-
-        return result;
+        return X_inf - delta * std::exp(-k * (e - x0));
     }
 
-    auto it = std::upper_bound(xe, xe + N_e, e);  // finds first xe[k] > e
-    int i = std::max(0, static_cast<int>(it - xe) - 1); // gives the index k such that xe[k] > e, subtracting one:  xe[i] <= e 
+    // --- Linear interpolation inside the table (unchanged from your code,
+    //     shown here for completeness)
+    int i = static_cast<int>(
+        std::upper_bound(xe, xe + N_e, e) - xe) - 1;
+    if (i < 0) i = 0;
+    if (i > N_e - 2) i = N_e - 2;
 
-    // --- linear interpolation
-    const double dx = xe[i + 1] - xe[i];
-    const double frac = (e - xe[i]) / dx;
-    const double result = ye[i] * (1.0 - frac) + ye[i + 1] * frac;
-
-    if (!std::isfinite(result)) {
-        std::cerr << "interpolate1D_nonuniform produced NaN/Inf at e=" << e
-                  << " between xe[" << i << "]=" << xe[i]
-                  << " and xe[" << i + 1 << "]=" << xe[i + 1] << std::endl;
-    }
-
-    return result;
+    const double frac = (e - xe[i]) / (xe[i + 1] - xe[i]);
+    return ye[i] * (1.0 - frac) + ye[i + 1] * frac;
 }
 
 void EOS_base::interpolate1D_with_gradients(

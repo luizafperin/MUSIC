@@ -89,41 +89,39 @@ double EOS_base::interpolate1D_nonuniform(double e, int table_idx,
     }
 
     // --- Extrapolation above table
-    if (e >= xe[N_e - 1]) {
-        const double x0 = xe[N_e - 1];
-        const double y0 = ye[N_e - 1];
+if (e >= xe[N_e - 1]) {
+    const double x0 = xe[N_e - 1];
+    const double y0 = ye[N_e - 1];
+    const double x1 = xe[N_e - 2];
+    const double y1 = ye[N_e - 2];
 
-        const double x1 = xe[N_e - 2];
-        const double y1 = ye[N_e - 2];
+    const double slope = (y0 - y1) / (x0 - x1);
+    const double dx    = e - x0;
 
-        const double slope = (y0 - y1) / (x0 - x1);
-
-        const double X_inf = asymptotic_value;
-        const double delta = X_inf - y0;
-
-        // Table already at the asymptote: nothing to relax
-        if (std::abs(delta) < 1e-12) {
-            return X_inf;
-        }
-
-        double k;
-        if (delta * slope > 1e-12 * std::abs(delta)) {
-            // Slope points toward the asymptote:
-            // match both value and slope at x0
-            k = slope / delta;
-        } else {
-            // Slope is ~0 or points away from the asymptote:
-            // cannot match the slope, but keep the VALUE continuous
-            // by relaxing exponentially over a length scale L.
-            const double L = x0;   // tunable: e.g. 0.5*x0 for a faster approach
-            k = 1.0 / L;
-        }
-
-        return X_inf - delta * std::exp(-k * (e - x0));
+    // Flat trend: constant continuation (monotonic, continuous)
+    if (std::abs(slope) < 1e-14 * std::max(1.0, std::abs(y0)) / x0) {
+        return y0;
     }
 
-    // --- Linear interpolation inside the table (unchanged from your code,
-    //     shown here for completeness)
+    double X_inf = asymptotic_value;
+    double delta = X_inf - y0;
+    double k;
+
+    if (delta * slope > 0.0) {
+        // Asymptote is ahead of the trend: match value and slope
+        k = slope / delta;
+    } else {
+        // Asymptote is behind the trend (or equal to y0): ignore it and saturate at an effective level in the direction of the trend.
+        const double L = x0;          // tunable length scale
+        delta = slope * L;
+        X_inf = y0 + delta;
+        k = 1.0 / L;
+    }
+
+    return X_inf - delta * std::exp(-k * dx);
+}
+
+    // --- Linear interpolation inside the table 
     int i = static_cast<int>(
         std::upper_bound(xe, xe + N_e, e) - xe) - 1;
     if (i < 0) i = 0;

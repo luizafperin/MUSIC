@@ -111,7 +111,8 @@ double EOS_base::interpolate1D_nonuniform(double e, int table_idx, double ***tab
         if (delta * slope <= 0) {
         // slope not pointing toward asymptote
             //std::cerr << "Using X as " << X_inf << std::endl;
-            return X_inf;
+            std::cerr << "Slope not pointing toward aymptote"<< std::endl; 
+            exit(1);
         }
 
         const double k = slope / delta;

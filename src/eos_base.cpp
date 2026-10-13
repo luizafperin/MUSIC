@@ -90,36 +90,35 @@ double EOS_base::interpolate1D_nonuniform(double e, int table_idx,
 
     // --- Extrapolation above table
 if (e >= xe[N_e - 1]) {
-    const double x0 = xe[N_e - 1];
-    const double y0 = ye[N_e - 1];
-    const double x1 = xe[N_e - 2];
-    const double y1 = ye[N_e - 2];
+        const double x0 = xe[N_e - 1];
+        const double y0 = ye[N_e - 1];
+        const double x1 = xe[N_e - 2];
+        const double y1 = ye[N_e - 2];
 
-    const double slope = (y0 - y1) / (x0 - x1);
-    const double dx    = e - x0;
+        const double slope = (y0 - y1) / (x0 - x1);
 
-    // Flat trend: constant continuation (monotonic, continuous)
-    if (std::abs(slope) < 1e-14 * std::max(1.0, std::abs(y0)) / x0) {
-        return y0;
-    }
+        double X_inf = asymptotic_value;  
 
-    double X_inf = asymptotic_value;
-    double delta = X_inf - y0;
-    double k;
+        const double delta = X_inf - y0;
 
-    if (delta * slope > 0.0) {
-        // Asymptote is ahead of the trend: match value and slope
-        k = slope / delta;
-    } else {
-        // Asymptote is behind the trend (or equal to y0): ignore it and saturate at an effective level in the direction of the trend.
-        const double L = x0;          // tunable length scale
-        delta = slope * L;
-        X_inf = y0 + delta;
-        k = 1.0 / L;
-    }
+        // If slope already ~0 or delta ~0, just return asymptote
+        if (std::abs(delta) < 1e-12 || std::abs(slope) < 1e-12) {
+            return X_inf;
+        }
+        
+        if (delta * slope <= 0) {
+        // slope not pointing toward asymptote
+            //std::cerr << "Using X as " << X_inf << std::endl;
+            std::cerr << "Slope not pointing toward aymptote"<< std::endl; 
+            exit(1);
+        }
 
-    return X_inf - delta * std::exp(-k * dx);
-}
+        const double k = slope / delta;
+
+        const double result =
+            X_inf - delta * std::exp(-k * (e - x0));
+
+        return result;
 
     // --- Linear interpolation inside the table 
     int i = static_cast<int>(

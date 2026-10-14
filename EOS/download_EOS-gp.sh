@@ -1,24 +1,26 @@
 #!/bin/bash
+set -euo pipefail
 
 REPO_URL="https://github.com/luizafperin/MUSIC-EOS-data.git"
 TEMP_DIR="MUSIC-EOS-data"
 TARGET_DIR="EOS-gp"
 
-# Remove old temporary clone if it exists
-rm -rf "$TEMP_DIR"
+rm -rf "$TEMP_DIR" "$TARGET_DIR"
 
-# Clone repository
-echo "Cloning MUSIC-EOS-data..."
-git clone --depth 1 "$REPO_URL" "$TEMP_DIR"
+echo "Downloading EOS data..."
 
-# Remove existing EOS-gp directory if you want a fresh copy
-rm -rf "$TARGET_DIR"
+git clone \
+    --depth 1 \
+    --filter=blob:none \
+    --sparse \
+    "$REPO_URL" "$TEMP_DIR"
 
-# Copy EOS-gp from the repository
+cd "$TEMP_DIR"
+git sparse-checkout set EOS-gp
+cd ..
+
 cp -r "$TEMP_DIR/EOS-gp" "$TARGET_DIR"
-
-# Remove temporary repository
 rm -rf "$TEMP_DIR"
 
-echo "Done!"
 echo "EOS data is now in: $TARGET_DIR"
+

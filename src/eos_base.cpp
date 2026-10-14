@@ -119,6 +119,7 @@ if (e >= xe[N_e - 1]) {
             X_inf - delta * std::exp(-k * (e - x0));
 
         return result;
+}
 
     // --- Linear interpolation inside the table 
     int i = static_cast<int>(

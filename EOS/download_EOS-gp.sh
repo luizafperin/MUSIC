@@ -1,26 +1,62 @@
-#!/bin/bash
+
+
+#!/usr/bin/env bash
 set -euo pipefail
 
-REPO_URL="https://github.com/luizafperin/MUSIC-EOS-data.git"
-TEMP_DIR="MUSIC-EOS-data"
+RECORD_ID="23511754"
+FILENAME="EOS-gp.tar.gz"
+
+URL="https://zenodo.org/records/${RECORD_ID}/files/${FILENAME}?download=1"
+
 TARGET_DIR="EOS-gp"
+EOS_PATH="EOS-gp/Tsw_136/training"
 
-rm -rf "$TEMP_DIR" "$TARGET_DIR"
+EXPECTED_MD5="3bdd007eda07c270c66b759a6066f307"
 
-echo "Downloading EOS data..."
+TEMP_DIR=$(mktemp -d)
+trap 'rm -rf "$TEMP_DIR"' EXIT
 
-git clone \
-    --depth 1 \
-    --single-branch \
-    --sparse \
-    "$REPO_URL" "$TEMP_DIR"
+echo "Downloading EOS training data from Zenodo..."
 
-cd "$TEMP_DIR"
-git sparse-checkout set EOS-gp
-cd ..
+# Download archive, retrying interrupted transfers
+curl -fL \
+    --retry 10 \
+    --retry-delay 5 \
+    --connect-timeout 30 \
+    --continue-at - \
+    "$URL" \
+    -o "$TEMP_DIR/$FILENAME"
 
-cp -r "$TEMP_DIR/EOS-gp" "$TARGET_DIR"
-rm -rf "$TEMP_DIR"
+echo "Verifying checksum..."
 
-echo "EOS data is now in: $TARGET_DIR"
+echo "$EXPECTED_MD5  $TEMP_DIR/$FILENAME" | md5sum -c -
+
+echo "Extracting EOS training data..."
+
+mkdir -p "$TEMP_DIR/extracted"
+
+tar -xzf "$TEMP_DIR/$FILENAME" \
+    -C "$TEMP_DIR/extracted"
+
+# Verify expected directory exists
+if [[ ! -d "$TEMP_DIR/extracted/$EOS_PATH" ]]; then
+    echo "ERROR: Expected directory not found in archive:"
+    echo "$EOS_PATH"
+    echo "Check the archive structure with:"
+    echo "tar -tzf $FILENAME | head"
+    exit 1
+fi
+
+# Preserve MUSIC directory structure
+mkdir -p "$TARGET_DIR/Tsw_136"
+
+# Replace old training directory only after extraction succeeds
+rm -rf "$TARGET_DIR/Tsw_136/training"
+
+mv "$TEMP_DIR/extracted/$EOS_PATH" \
+   "$TARGET_DIR/Tsw_136/training"
+
+echo "EOS training data downloaded successfully!"
+echo "Location: $TARGET_DIR/Tsw_136/training"
+
 

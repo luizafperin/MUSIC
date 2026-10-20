@@ -11,7 +11,7 @@ echo "Downloading EOS data..."
 
 git clone \
     --depth 1 \
-    --filter=blob:none \
+    --single-branch \
     --sparse \
     "$REPO_URL" "$TEMP_DIR"
 

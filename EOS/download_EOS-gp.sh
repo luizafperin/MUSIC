@@ -3,7 +3,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-RECORD_ID="23511754"
+RECORD_ID="23540494"
 FILENAME="EOS-gp.tar.gz"
 
 URL="https://zenodo.org/records/${RECORD_ID}/files/${FILENAME}?download=1"
@@ -11,7 +11,7 @@ URL="https://zenodo.org/records/${RECORD_ID}/files/${FILENAME}?download=1"
 TARGET_DIR="EOS-gp"
 EOS_PATH="EOS-gp/Tsw_136/training"
 
-EXPECTED_MD5="3bdd007eda07c270c66b759a6066f307"
+EXPECTED_MD5="0ebcccedffe0b59e0a09b599fbcbd50d"
 
 TEMP_DIR=$(mktemp -d)
 trap 'rm -rf "$TEMP_DIR"' EXIT
